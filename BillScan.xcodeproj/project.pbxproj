@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		981D68B22FA17EF600C7E647 /* HotSwiftUI in Frameworks */ = {isa = PBXBuildFile; productRef = 981D68B12FA17EF600C7E647 /* HotSwiftUI */; };
 		A10A10A10A10A10A10A10A10 /* Llama in Frameworks */ = {isa = PBXBuildFile; productRef = A20A20A20A20A20A20A20A20 /* Llama */; };
 /* End PBXBuildFile section */
 
@@ -27,6 +28,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				981D68B22FA17EF600C7E647 /* HotSwiftUI in Frameworks */,
 				A10A10A10A10A10A10A10A10 /* Llama in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -70,6 +72,7 @@
 			);
 			name = BillScan;
 			packageProductDependencies = (
+				981D68B12FA17EF600C7E647 /* HotSwiftUI */,
 				A20A20A20A20A20A20A20A20 /* Llama */,
 			);
 			productName = BillScan;
@@ -101,6 +104,7 @@
 			mainGroup = 98DC66582FA0FC2200D5DA4F;
 			minimizedProjectReferenceProxies = 1;
 			packageReferences = (
+				981D68B02FA17EF600C7E647 /* XCRemoteSwiftPackageReference "HotSwiftUI" */,
 				981D68AF2FA17EF600C7E647 /* XCRemoteSwiftPackageReference "llama" */,
 			);
 			preferredProjectObjectVersion = 77;
@@ -171,6 +175,7 @@
 				DEBUG_INFORMATION_FORMAT = dwarf;
 				DEVELOPMENT_TEAM = 268ZU2CHQ8;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				EMIT_FRONTEND_COMMAND_LINES = YES;
 				ENABLE_TESTABILITY = YES;
 				ENABLE_USER_SCRIPT_SANDBOXING = YES;
 				GCC_C_LANGUAGE_STANDARD = gnu17;
@@ -289,6 +294,11 @@
 					"@executable_path/Frameworks",
 				);
 				MARKETING_VERSION = 1.0;
+				OTHER_LDFLAGS = (
+					"$(inherited)",
+					"-Xlinker",
+					"-interposable",
+				);
 				PRODUCT_BUNDLE_IDENTIFIER = com.xjx.BillScan.BillScan;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				STRING_CATALOG_GENERATE_SYMBOLS = YES;
@@ -367,6 +377,14 @@
 /* End XCConfigurationList section */
 
 /* Begin XCRemoteSwiftPackageReference section */
+		981D68B02FA17EF600C7E647 /* XCRemoteSwiftPackageReference "HotSwiftUI" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/johnno1962/HotSwiftUI";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 1.2.5;
+			};
+		};
 		981D68AF2FA17EF600C7E647 /* XCRemoteSwiftPackageReference "llama" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/mattt/llama.swift";
@@ -378,6 +396,11 @@
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
+		981D68B12FA17EF600C7E647 /* HotSwiftUI */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 981D68B02FA17EF600C7E647 /* XCRemoteSwiftPackageReference "HotSwiftUI" */;
+			productName = HotSwiftUI;
+		};
 		A20A20A20A20A20A20A20A20 /* Llama */ = {
 			isa = XCSwiftPackageProductDependency;
 			package = 981D68AF2FA17EF600C7E647 /* XCRemoteSwiftPackageReference "llama" */;

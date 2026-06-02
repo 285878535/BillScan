@@ -7,11 +7,10 @@ struct ReceiptFolderView: View {
     @Query(sort: \Receipt.createdAt, order: .reverse) private var receipts: [Receipt]
     @Query(sort: \Category.createdAt) private var userCategories: [Category]
     @State private var selectedReceipt: Receipt?
-    @State private var showDetail = false
     @State private var searchText = ""
     @State private var selectedCategory: String? = nil
     @Binding var showTabBar: Bool
-    
+
     // 扫描相关状态
     @State private var showScanningOptions = false
     @State private var showImagePicker = false
@@ -20,8 +19,8 @@ struct ReceiptFolderView: View {
     @State private var selectedImage: UIImage?
     @State private var shouldAutoCropSelectedPhoto = false
     @State private var navigateToCapture = false
-    
-    // 悬浮按钮位置 (使用屏幕坐标偏移)
+
+    // 悬浮按钮位置
     @State private var fabPosition: CGPoint = CGPoint(x: UIScreen.main.bounds.width - 50, y: UIScreen.main.bounds.height - 180)
     @GestureState private var dragOffset: CGSize = .zero
 
@@ -71,7 +70,7 @@ struct ReceiptFolderView: View {
                     // ── 顶部标题
                     HStack {
                         VStack(alignment: .leading, spacing: 4) {
-                            Text("我的票据")
+                            Text("票夹")
                                 .font(.system(size: 28, weight: .bold))
                                 .foregroundColor(AppTheme.textPrimary)
                         }
@@ -131,8 +130,8 @@ struct ReceiptFolderView: View {
                         }
                     }
                 }
-                
-                // ── 优化后的悬浮按钮 (增加了边界限制)
+
+                // ── 悬浮按钮
                 Button(action: {
                     UIImpactFeedbackGenerator(style: .medium).impactOccurred()
                     showScanningOptions = true
@@ -156,17 +155,29 @@ struct ReceiptFolderView: View {
                         .onEnded { value in
                             let screen = UIScreen.main.bounds
                             let padding: CGFloat = 30
-                            
                             var newX = fabPosition.x + value.translation.width
                             var newY = fabPosition.y + value.translation.height
-                            
-                            // 限制在屏幕内 (考虑 padding)
                             newX = min(max(newX, padding), screen.width - padding)
-                            newY = min(max(newY, padding), screen.height - padding - 80) // 底部留出 TabBar 空间
-                            
+                            newY = min(max(newY, padding), screen.height - padding - 80)
                             fabPosition = CGPoint(x: newX, y: newY)
                         }
                 )
+                .confirmationDialog("选择图片来源", isPresented: $showScanningOptions, titleVisibility: .visible) {
+                    if VNDocumentCameraViewController.isSupported {
+                        Button("扫描文稿") { showDocumentScanner = true }
+                    }
+                    Button("拍照") {
+                        shouldAutoCropSelectedPhoto = false
+                        pickerSourceType = .camera
+                        showImagePicker = true
+                    }
+                    Button("从相册选择") {
+                        shouldAutoCropSelectedPhoto = true
+                        pickerSourceType = .photoLibrary
+                        showImagePicker = true
+                    }
+                    Button("取消", role: .cancel) {}
+                }
             }
             .overlay(
                 ZStack {
@@ -207,24 +218,6 @@ struct ReceiptFolderView: View {
             .toolbar(.hidden)
             .sheet(item: $selectedReceipt) { receipt in
                 ReceiptDetailView(receipt: receipt)
-            }
-            .confirmationDialog("选择图片来源", isPresented: $showScanningOptions, titleVisibility: .visible) {
-                if VNDocumentCameraViewController.isSupported {
-                    Button("扫描文稿") {
-                        showDocumentScanner = true
-                    }
-                }
-                Button("拍照") {
-                    shouldAutoCropSelectedPhoto = false
-                    pickerSourceType = .camera
-                    showImagePicker = true
-                }
-                Button("从相册选择") {
-                    shouldAutoCropSelectedPhoto = true
-                    pickerSourceType = .photoLibrary
-                    showImagePicker = true
-                }
-                Button("取消", role: .cancel) {}
             }
             .sheet(isPresented: $showImagePicker) {
                 ImagePicker(image: $selectedImage, sourceType: pickerSourceType)
@@ -295,8 +288,7 @@ struct ReceiptFolderView: View {
                     // 5. 最终呈现详情页
                     DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
                         selectedReceipt = receipt
-                        showDetail = true
-                        
+
                         // 6. 清理动画状态
                         DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
                             showOpenAnimation = false
@@ -409,12 +401,6 @@ struct ReceiptDetailView: View {
     @State private var uiImage: UIImage?
     @State private var showShareSheet = false
     @State private var shareItems: [Any] = []
-    
-    @State private var isEditing = false
-    @State private var editedMerchantName = ""
-    @State private var editedAmount = ""
-    @State private var editedCategory = ""
-    
     @State private var showFullScreen = false
 
     var body: some View {
@@ -424,170 +410,99 @@ struct ReceiptDetailView: View {
             ScrollView {
                 VStack(spacing: 0) {
                     // ── Hero 图区域
-                    ZStack(alignment: .topLeading) {
+                    ZStack(alignment: .bottomLeading) {
                         if let image = uiImage {
                             Image(uiImage: image)
                                 .resizable()
                                 .aspectRatio(contentMode: .fill)
-                                .frame(width: UIScreen.main.bounds.width, height: 360)
+                                .frame(width: UIScreen.main.bounds.width, height: 380)
                                 .clipped()
-                                .onTapGesture {
-                                    showFullScreen = true
-                                }
+                                .onTapGesture { showFullScreen = true }
                         } else {
                             ZStack {
                                 Rectangle().fill(AppTheme.bgSecondary)
                                 Image(systemName: "doc.text.fill")
                                     .font(.system(size: 80))
-                                    .foregroundColor(AppTheme.brandPrimary.opacity(0.2))
+                                    .foregroundColor(AppTheme.brandPrimary.opacity(0.15))
                             }
-                            .frame(width: UIScreen.main.bounds.width, height: 360)
+                            .frame(width: UIScreen.main.bounds.width, height: 380)
                         }
-                        
-                        // 浮动按钮
-                        HStack {
-                            Button { dismiss() } label: {
-                                Image(systemName: "chevron.left")
-                                    .foregroundColor(AppTheme.textPrimary)
-                                    .font(.system(size: 18, weight: .semibold))
-                                    .padding(10)
-                                    .background(.ultraThinMaterial)
-                                    .clipShape(Circle())
-                            }
-                            Spacer()
-                            HStack(spacing: 12) {
-                                Button { 
-                                    if isEditing {
-                                        saveChanges()
-                                    }
-                                    isEditing.toggle()
-                                } label: {
-                                    Image(systemName: isEditing ? "checkmark" : "pencil")
-                                        .foregroundColor(AppTheme.textPrimary)
-                                        .font(.system(size: 18, weight: .semibold))
-                                        .padding(10)
+
+                        // 底部渐变遮罩
+                        LinearGradient(
+                            colors: [.clear, .black.opacity(0.4)],
+                            startPoint: .center,
+                            endPoint: .bottom
+                        )
+                        .frame(height: 140)
+                        .frame(maxWidth: .infinity, alignment: .bottom)
+
+                        // 顶部按钮
+                        VStack {
+                            HStack {
+                                Button { dismiss() } label: {
+                                    Image(systemName: "chevron.left")
+                                        .foregroundColor(.white)
+                                        .font(.system(size: 16, weight: .semibold))
+                                        .frame(width: 36, height: 36)
                                         .background(.ultraThinMaterial)
                                         .clipShape(Circle())
                                 }
-                                
+                                Spacer()
                                 Button { exportAsImage() } label: {
                                     Image(systemName: "square.and.arrow.up")
-                                        .foregroundColor(AppTheme.textPrimary)
-                                        .font(.system(size: 18, weight: .semibold))
-                                        .padding(10)
+                                        .foregroundColor(.white)
+                                        .font(.system(size: 16, weight: .semibold))
+                                        .frame(width: 36, height: 36)
                                         .background(.ultraThinMaterial)
                                         .clipShape(Circle())
                                 }
                             }
+                            .padding(.horizontal, 16)
+                            .padding(.top, 52)
+                            Spacer()
                         }
-                        .padding(.horizontal, 16)
-                        .padding(.top, 52)
                     }
                     
                     // ── 信息卡片
-                    VStack(alignment: .leading, spacing: 20) {
-                        HStack(alignment: .top) {
-                            VStack(alignment: .leading, spacing: 4) {
-                                if isEditing {
-                                    TextField("分类", text: $editedCategory)
-                                        .font(.system(size: 13))
-                                        .foregroundColor(AppTheme.brandPrimary)
-                                        .padding(.horizontal, 8)
-                                        .padding(.vertical, 4)
-                                        .background(AppTheme.brandPrimary.opacity(0.1))
-                                        .cornerRadius(6)
-                                } else {
-                                    Text(receipt.category).font(.system(size: 13))
-                                        .foregroundColor(AppTheme.brandPrimary)
-                                        .padding(.horizontal, 8)
-                                        .padding(.vertical, 4)
-                                        .background(AppTheme.brandPrimary.opacity(0.1))
-                                        .cornerRadius(6)
-                                }
-                                
-                                Text(receipt.type.rawValue)
-                                    .font(.system(size: 24, weight: .bold))
-                                    .foregroundColor(AppTheme.textPrimary)
+                    VStack(spacing: 20) {
+                        // 分类标签 + 类型 + 金额
+                        VStack(spacing: 10) {
+                            Text(receipt.category)
+                                .font(.system(size: 12, weight: .medium))
+                                .foregroundColor(.white)
+                                .padding(.horizontal, 10)
+                                .padding(.vertical, 4)
+                                .background(AppTheme.brandPrimary)
+                                .cornerRadius(6)
+
+                            Text(receipt.type.rawValue)
+                                .font(.system(size: 26, weight: .bold))
+                                .foregroundColor(AppTheme.textPrimary)
+
+                            if let amount = receipt.amount {
+                                Text("¥\(String(format: "%.2f", amount))")
+                                    .font(.system(size: 32, weight: .heavy))
+                                    .foregroundColor(AppTheme.brandPrimary)
                             }
+                        }
+                        .frame(maxWidth: .infinity)
+                        .padding(.top, 4)
+                        
+                        // 日期
+                        HStack {
+                            Image(systemName: "calendar")
+                                .foregroundColor(AppTheme.textDisabled)
+                                .font(.system(size: 14))
+                            Text(receipt.date.formatted(date: .long, time: .omitted))
+                                .font(.system(size: 14))
+                                .foregroundColor(AppTheme.textSecondary)
                             Spacer()
-                            if let _ = receipt.amount {
-                                VStack(alignment: .trailing) {
-                                    if isEditing {
-                                        TextField("金额", text: $editedAmount)
-                                            .keyboardType(.decimalPad)
-                                            .font(.system(size: 24, weight: .heavy))
-                                            .foregroundColor(AppTheme.brandPrimary)
-                                            .multilineTextAlignment(.trailing)
-                                    } else {
-                                        Text("¥\(String(format: "%.2f", receipt.amount ?? 0))")
-                                            .font(.system(size: 24, weight: .heavy))
-                                            .foregroundColor(AppTheme.brandPrimary)
-                                    }
-                                }
-                            }
                         }
-                        
-                        Divider().background(AppTheme.divider)
-                        
-                        VStack(spacing: 16) {
-                            if isEditing {
-                                EditInfoRow(title: "商家/医院", text: $editedMerchantName)
-                            } else {
-                                DetailInfoRow(title: "商家/医院", value: receipt.merchantName ?? "未知")
-                            }
-                            DetailInfoRow(title: "日期", value: receipt.date.formatted(date: .long, time: .omitted))
-                            if let patient = receipt.patientName {
-                                DetailInfoRow(title: "病人姓名", value: patient)
-                            }
-                            
-                            ForEach(displayFieldKeys, id: \.self) { key in
-                                if !isDuplicateSummaryField(key) {
-                                    DetailInfoRow(title: key, value: receipt.additionalFields?[key] ?? "")
-                                }
-                            }
-                        }
-                        
-                        // ── AI 增强标识
-                        if receipt.additionalFields?["AI解析状态"] != nil {
-                            HStack {
-                                Image(systemName: "sparkles")
-                                    .foregroundColor(.purple)
-                                Text("此票据已由云模型完成 OCR 后整理")
-                                    .font(.system(size: 12, weight: .medium))
-                                    .foregroundColor(.purple)
-                                Spacer()
-                            }
-                            .padding(.horizontal, 12)
-                            .padding(.vertical, 8)
-                            .background(Color.purple.opacity(0.05))
-                            .cornerRadius(8)
-                        }
-                        
-                        Divider().background(AppTheme.divider)
-                        
-                        // 识别内容展示
-                        VStack(alignment: .leading, spacing: 16) {
-                            HStack {
-                                Text("OCR 原文")
-                                    .font(.system(size: 17, weight: .semibold))
-                                Spacer()
-                                Text("系统识别")
-                                    .font(.system(size: 12))
-                                    .foregroundColor(AppTheme.textDisabled)
-                            }
-                            
-                            VStack(spacing: 20) {
-                                Text(receipt.extractedText)
-                                    .font(.system(size: 13))
-                                    .foregroundColor(AppTheme.textSecondary)
-                                    .lineSpacing(4)
-                                    .frame(maxWidth: .infinity, alignment: .leading)
-                            }
-                            .padding(16)
-                            .background(AppTheme.bgSecondary)
-                            .cornerRadius(16)
-                            .overlay(RoundedRectangle(cornerRadius: 16).stroke(Color.purple.opacity(0.1), lineWidth: 1))
-                        }
+                        .padding(.horizontal, 16)
+                        .padding(.vertical, 12)
+                        .background(AppTheme.bgSecondary)
+                        .cornerRadius(12)
                         
                         Spacer().frame(height: 60)
                     }
@@ -610,139 +525,13 @@ struct ReceiptDetailView: View {
         }
         .onAppear {
             uiImage = UIImage(data: receipt.imageData)
-            editedMerchantName = receipt.merchantName ?? ""
-            editedAmount = String(format: "%.2f", receipt.amount ?? 0)
-            editedCategory = receipt.category
         }
-    }
-
-    private func saveChanges() {
-        receipt.merchantName = editedMerchantName
-        receipt.amount = Double(editedAmount)
-        receipt.category = editedCategory
-        var fields = receipt.additionalFields ?? [:]
-        if !editedMerchantName.isEmpty {
-            if fields["商家名称"] != nil {
-                fields["商家名称"] = editedMerchantName
-            } else if fields["医疗机构"] != nil {
-                fields["医疗机构"] = editedMerchantName
-            } else {
-                fields["商家名称"] = editedMerchantName
-            }
-        }
-        if !editedAmount.isEmpty {
-            if fields["总金额"] != nil {
-                fields["总金额"] = editedAmount
-            } else {
-                fields["金额"] = editedAmount
-            }
-        }
-        fields["分类"] = editedCategory
-        receipt.additionalFields = fields
     }
 
     private func exportAsImage() {
         guard let image = uiImage else { return }
         shareItems = [image]
         showShareSheet = true
-    }
-
-    private var displayFieldKeys: [String] {
-        let hiddenKeys = Set(["AI结构化文本", "AI解析状态", "模型版本", "解析模式", "明细信息", "项目数", "检验项目详情"])
-        let medicalOnlyKeys = Set(["病人姓名", "姓名", "性别", "年龄", "门诊号", "条码号", "科室", "临床诊断", "送检医生", "采集者"])
-        let preferredOrder = [
-            "商家名称", "医疗机构", "医院名称", "机构名称", "门店名称", "商户名称",
-            "总金额", "金额", "实付金额", "合计", "费用",
-            "病人姓名", "姓名", "客户姓名", "乘客姓名",
-            "分类", "日期", "时间", "单号", "票号"
-        ]
-        let availableKeys = (receipt.additionalFields ?? [:]).keys.filter {
-            !hiddenKeys.contains($0) && (receipt.type == .medical || !medicalOnlyKeys.contains($0))
-        }
-        let orderedPreferredKeys = preferredOrder.filter { availableKeys.contains($0) }
-        let remainingKeys = availableKeys.filter { !orderedPreferredKeys.contains($0) }.sorted()
-        return orderedPreferredKeys + remainingKeys
-    }
-
-    private func isDuplicateSummaryField(_ key: String) -> Bool {
-        if ["分类"].contains(key) {
-            return true
-        }
-        if ["病人姓名", "姓名", "客户姓名", "乘客姓名"].contains(key), receipt.patientName != nil {
-            return true
-        }
-        if ["商家名称", "医疗机构", "医院名称", "机构名称", "门店名称", "商户名称"].contains(key), receipt.merchantName != nil {
-            return true
-        }
-        if ["总金额", "金额", "实付金额", "合计", "费用"].contains(key), receipt.amount != nil {
-            return true
-        }
-        return false
-    }
-
-    private func pairLines(_ lines: [String]) -> [KeyValuePair] {
-        var pairs: [KeyValuePair] = []
-        var i = 0
-        
-        while i < lines.count {
-            let line = lines[i]
-            
-            // 模式 1: 包含冒号 "姓名：邢嘉幸"
-            if line.contains(":") || line.contains("：") {
-                let parts = line.components(separatedBy: CharacterSet(charactersIn: ":："))
-                if parts.count >= 2 {
-                    pairs.append(KeyValuePair(key: parts[0].trimmingCharacters(in: .whitespaces), 
-                                            value: parts[1...].joined(separator: ":").trimmingCharacters(in: .whitespaces)))
-                    i += 1
-                    continue
-                }
-            }
-            
-            // 模式 2: 键值对分两行 "姓名" \n "邢嘉幸"
-            if i + 1 < lines.count {
-                let nextLine = lines[i+1]
-                // 简单的启发式：如果第一行较短，且不全是数字，则认为是键
-                if line.count < 10 && !line.contains(where: { $0.isNumber }) {
-                    pairs.append(KeyValuePair(key: line, value: nextLine))
-                    i += 2
-                    continue
-                }
-            }
-            
-            // 模式 3: 无法配对，单独作为一行
-            pairs.append(KeyValuePair(key: "备注", value: line))
-            i += 1
-        }
-        return pairs
-    }
-}
-
-struct EditInfoRow: View {
-    let title: String
-    @Binding var text: String
-    
-    var body: some View {
-        HStack {
-            Text(title).font(.system(size: 15)).foregroundColor(AppTheme.textSecondary)
-            Spacer()
-            TextField(title, text: $text)
-                .font(.system(size: 15, weight: .medium))
-                .foregroundColor(AppTheme.textPrimary)
-                .multilineTextAlignment(.trailing)
-        }
-    }
-}
-
-struct DetailInfoRow: View {
-    let title: String
-    let value: String
-    
-    var body: some View {
-        HStack {
-            Text(title).font(.system(size: 15)).foregroundColor(AppTheme.textSecondary)
-            Spacer()
-            Text(value).font(.system(size: 15, weight: .medium)).foregroundColor(AppTheme.textPrimary)
-        }
     }
 }
 
@@ -819,19 +608,6 @@ struct FullScreenImageView: View {
         }
     }
 }
-struct MedicalItem: Identifiable {
-    let id = UUID()
-    let name: String
-    let result: String
-    let range: String
-}
-
-struct KeyValuePair: Identifiable {
-    let id = UUID()
-    let key: String
-    let value: String
-}
-
 struct ShareSheet: UIViewControllerRepresentable {
     let items: [Any]
     func makeUIViewController(context: Context) -> UIActivityViewController {

@@ -120,29 +120,6 @@ struct CaptureReceiptView: View {
                         .modernCardStyle()
                     } else if capturedImage != nil {
                         VStack(alignment: .leading, spacing: AppTheme.spacingLG) {
-                            // ── AI 状态指示灯
-                            HStack {
-                                Circle()
-                                    .fill(ModelManager.shared.parsingModeIsAI ? Color.green : Color.gray.opacity(0.3))
-                                    .frame(width: 8, height: 8)
-                                
-                                Text(ModelManager.shared.parsingModeLabel)
-                                    .font(.system(size: 12, weight: .medium))
-                                    .foregroundColor(ModelManager.shared.parsingModeIsAI ? .green : AppTheme.textSecondary)
-                                
-                                Spacer()
-                                
-                                if ModelManager.shared.parsingModeIsAI {
-                                    Image(systemName: "sparkles")
-                                        .foregroundColor(.purple)
-                                        .font(.system(size: 12))
-                                }
-                            }
-                            .padding(.horizontal, 12)
-                            .padding(.vertical, 8)
-                            .background(ModelManager.shared.parsingModeIsAI ? Color.green.opacity(0.05) : Color.gray.opacity(0.05))
-                            .cornerRadius(8)
-
                             SectionHeader(title: formFields.isEmpty ? "手动录入" : "智能提取结果")
 
                             VStack(spacing: 16) {

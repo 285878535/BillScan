@@ -5,6 +5,10 @@ import SwiftData
 struct BillScanApp: App {
     @State private var showTabBar = true
 
+    init() {
+        InjectionIIISetup.loadBundle()
+    }
+
     var sharedModelContainer: ModelContainer = {
         let schema = Schema([
             Receipt.self,
@@ -21,22 +25,32 @@ struct BillScanApp: App {
 
     var body: some Scene {
         WindowGroup {
-            TabView {
-                ReceiptFolderView(showTabBar: $showTabBar)
-                    .tabItem {
-                        Image(systemName: "folder.fill")
-                        Text("票夹")
-                    }
-
-                SettingsView(showTabBar: $showTabBar)
-                    .tabItem {
-                        Image(systemName: "person.fill")
-                        Text("我的")
-                    }
-            }
-            .background(AppTheme.bgPrimary.ignoresSafeArea())
-            .opacity(showTabBar ? 1 : 1)
+            RootTabShell(showTabBar: $showTabBar)
         }
         .modelContainer(sharedModelContainer)
+    }
+}
+
+private struct RootTabShell: View {
+    @Binding var showTabBar: Bool
+    @ObserveInjection var inject
+
+    var body: some View {
+        TabView {
+            ReceiptFolderView(showTabBar: $showTabBar)
+                .tabItem {
+                    Image(systemName: "folder.fill")
+                    Text("票夹")
+                }
+
+            SettingsView(showTabBar: $showTabBar)
+                .tabItem {
+                    Image(systemName: "person.fill")
+                    Text("我的")
+                }
+        }
+        .background(AppTheme.bgPrimary.ignoresSafeArea())
+        .opacity(showTabBar ? 1 : 1)
+        .enableInjection()
     }
 }
