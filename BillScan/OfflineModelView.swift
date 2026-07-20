@@ -8,16 +8,21 @@ struct OfflineModelView: View {
     @State private var draftBaseURL = ""
     @State private var draftAPIKey = ""
     @State private var draftModelID = ""
+    @State private var draftCozeToken = ""
+    @State private var draftCozeBotID = ""
     @State private var toastMessage = ""
     @State private var showToast = false
     @State private var isTesting = false
     @State private var testingMessage = ""
+    @State private var isTestingCoze = false
+    @State private var cozeTestingMessage = ""
 
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 20) {
                 summaryCard
                 engineSection
+                cozeConfigSection
                 savedProfilesSection
                 cloudConfigSection
             }
@@ -99,12 +104,75 @@ struct OfflineModelView: View {
             )
 
             engineOption(
+                title: "扣子智能体",
+                subtitle: "上传票据图片给扣子多模态智能体直接识别，识别失败自动回退系统 OCR。",
+                trailing: modelMgr.hasValidCozeConfiguration ? "已配置" : "未配置",
+                selected: modelMgr.currentModelType == .coze,
+                action: { modelMgr.selectModel(for: .coze) }
+            )
+
+            engineOption(
                 title: "自定义云模型",
                 subtitle: "支持 OpenAI 兼容和 Anthropic 兼容协议，可保存多个模型配置。",
                 trailing: modelMgr.hasValidCloudConfiguration ? "已配置" : "未配置",
                 selected: modelMgr.currentModelType == .customCloud,
                 action: { modelMgr.selectModel(for: .customCloud) }
             )
+        }
+    }
+
+    private var cozeConfigSection: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            Text("扣子智能体配置")
+                .font(.system(size: 18, weight: .bold))
+                .foregroundColor(AppTheme.textPrimary)
+
+            VStack(alignment: .leading, spacing: 16) {
+                secureInputField(title: "API Token", text: $draftCozeToken, placeholder: "pat_...")
+                inputField(title: "Bot ID", text: $draftCozeBotID, placeholder: "智能体发布为 API 后的 Bot ID")
+
+                if !cozeTestingMessage.isEmpty {
+                    Text(cozeTestingMessage)
+                        .font(.system(size: 13, weight: .medium))
+                        .fixedSize(horizontal: false, vertical: true)
+                        .foregroundColor(cozeTestingMessage == "连接成功" ? .green : .red)
+                }
+
+                HStack(spacing: 12) {
+                    Button(action: testCozeConnection) {
+                        HStack(spacing: 6) {
+                            if isTestingCoze {
+                                ProgressView()
+                                    .tint(AppTheme.brandPrimary)
+                            }
+                            Text(isTestingCoze ? "测试中" : "测试连通性")
+                        }
+                        .font(.system(size: 15, weight: .semibold))
+                        .foregroundColor(AppTheme.brandPrimary)
+                        .frame(maxWidth: .infinity)
+                        .padding(.vertical, 14)
+                        .background(AppTheme.brandPrimary.opacity(0.1))
+                        .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
+                    }
+                    .disabled(isTestingCoze)
+
+                    Button(action: saveCozeConfiguration) {
+                        Text("保存配置")
+                            .font(.system(size: 15, weight: .semibold))
+                            .foregroundColor(.white)
+                            .frame(maxWidth: .infinity)
+                            .padding(.vertical, 14)
+                            .background(AppTheme.brandPrimary)
+                            .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
+                    }
+                }
+
+                Text("在 coze.cn 创建票据识别智能体（模型需支持视觉理解），发布为 API 后填入 Bot ID；Token 用扣子的个人访问令牌。")
+                    .font(.system(size: 12))
+                    .foregroundColor(AppTheme.textDisabled)
+            }
+            .padding(18)
+            .modernCardStyle()
         }
     }
 
@@ -403,11 +471,32 @@ struct OfflineModelView: View {
     }
 
     private func loadActiveProfile() {
+        draftCozeToken = modelMgr.cozeAPIToken
+        draftCozeBotID = modelMgr.cozeBotID
         guard let profile = modelMgr.activeCloudProfile else {
             resetDraft()
             return
         }
         loadProfile(profile)
+    }
+
+    private func saveCozeConfiguration() {
+        modelMgr.cozeAPIToken = draftCozeToken.trimmingCharacters(in: .whitespacesAndNewlines)
+        modelMgr.cozeBotID = draftCozeBotID.trimmingCharacters(in: .whitespacesAndNewlines)
+        if modelMgr.hasValidCozeConfiguration {
+            modelMgr.selectModel(for: .coze)
+        }
+        presentToast("已保存")
+    }
+
+    private func testCozeConnection() {
+        isTestingCoze = true
+        cozeTestingMessage = ""
+        CozeService.shared.testConnection(token: draftCozeToken, botID: draftCozeBotID) { success, message in
+            isTestingCoze = false
+            cozeTestingMessage = message
+            presentToast(success ? "连接成功" : "连接失败")
+        }
     }
 
     private func loadProfile(_ profile: CloudModelProfile) {

@@ -123,10 +123,39 @@ struct CaptureReceiptView: View {
                             SectionHeader(title: formFields.isEmpty ? "手动录入" : "智能提取结果")
 
                             VStack(spacing: 16) {
-                                FieldRow(label: "票据类型", text: Binding(
-                                    get: { receiptType.rawValue },
-                                    set: { receiptType = ReceiptType(rawValue: $0) ?? .other }
-                                ))
+                                VStack(alignment: .leading, spacing: 8) {
+                                    Text("票据类型")
+                                        .font(.system(size: 13, weight: .medium))
+                                        .foregroundColor(AppTheme.textSecondary)
+
+                                    Menu {
+                                        ForEach(ReceiptType.allCases, id: \.self) { type in
+                                            Button {
+                                                receiptType = type
+                                            } label: {
+                                                if type == receiptType {
+                                                    Label(type.rawValue, systemImage: "checkmark")
+                                                } else {
+                                                    Text(type.rawValue)
+                                                }
+                                            }
+                                        }
+                                    } label: {
+                                        HStack {
+                                            Text(receiptType.rawValue)
+                                                .font(.system(size: 16))
+                                                .foregroundColor(AppTheme.textPrimary)
+                                            Spacer()
+                                            Image(systemName: "chevron.up.chevron.down")
+                                                .font(.system(size: 12, weight: .medium))
+                                                .foregroundColor(AppTheme.textDisabled)
+                                        }
+                                        .padding(.horizontal, 14)
+                                        .padding(.vertical, 12)
+                                        .background(AppTheme.bgSecondary)
+                                        .cornerRadius(10)
+                                    }
+                                }
 
                                 ForEach(displayFieldKeys, id: \.self) { key in
                                     FieldRow(label: key, text: Binding(
@@ -325,6 +354,7 @@ struct CaptureReceiptView: View {
     }
 
     private func saveReceipt() {
+        guard !showSaveAnimation else { return } // 防止连点重复保存
         guard let image = capturedImage,
               let imageData = image.jpegData(compressionQuality: 0.8) else {
             return
@@ -333,7 +363,7 @@ struct CaptureReceiptView: View {
         let amount = Double(firstValue(for: ["总金额", "金额", "实付金额", "合计", "费用"]) ?? "")
         let category = formFields["分类"] ?? receiptType.rawValue
         let patientName = firstValue(for: ["病人姓名", "姓名", "客户姓名", "乘客姓名"])
-        let merchantName = firstValue(for: ["商家名称", "医疗机构", "医院名称", "机构名称", "门店名称", "商户名称"])
+        let merchantName = firstValue(for: ["商家名称", "医疗机构", "医院", "医院名称", "机构名称", "门店名称", "商户名称"])
 
         let receipt = Receipt(
             type: receiptType,
@@ -408,7 +438,7 @@ struct CaptureReceiptView: View {
 
     private var displayFieldKeys: [String] {
         let hiddenKeys = Set(["分类", "AI结构化文本", "AI解析状态", "模型版本", "解析模式", "明细信息", "项目数", "检验项目详情"])
-        let medicalOnlyKeys = Set(["病人姓名", "姓名", "性别", "年龄", "门诊号", "条码号", "科室", "临床诊断", "送检医生", "采集者"])
+        let medicalOnlyKeys = Set(["病人姓名", "性别", "年龄", "门诊号", "条码号", "科室", "临床诊断", "送检医生", "采集者", "医院", "医疗机构"])
         let preferredOrder = [
             "票据类型",
             "商家名称", "医疗机构", "医院", "商家", "门店名称", "商户名称",

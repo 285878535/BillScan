@@ -48,6 +48,7 @@ final class ModelManager: ObservableObject {
     enum ModelType: String, CaseIterable {
         case system = "系统原生引擎"
         case customCloud = "自定义云模型"
+        case coze = "扣子智能体"
     }
 
     @Published var currentModelName: String {
@@ -59,15 +60,25 @@ final class ModelManager: ObservableObject {
     @Published var activeCloudProfileID: UUID? {
         didSet { UserDefaults.standard.set(activeCloudProfileID?.uuidString, forKey: activeCloudProfileKey) }
     }
+    @Published var cozeAPIToken: String {
+        didSet { UserDefaults.standard.set(cozeAPIToken, forKey: cozeTokenKey) }
+    }
+    @Published var cozeBotID: String {
+        didSet { UserDefaults.standard.set(cozeBotID, forKey: cozeBotIDKey) }
+    }
 
     private let selectedModelKey = "SelectedModelName"
     private let cloudProfilesKey = "CloudModelProfiles"
     private let activeCloudProfileKey = "ActiveCloudProfileID"
+    private let cozeTokenKey = "CozeAPIToken"
+    private let cozeBotIDKey = "CozeBotID"
 
     private init() {
         let defaults = UserDefaults.standard
         let savedModel = defaults.string(forKey: selectedModelKey)
         currentModelName = ModelType(rawValue: savedModel ?? "")?.rawValue ?? ModelType.system.rawValue
+        cozeAPIToken = defaults.string(forKey: cozeTokenKey) ?? ""
+        cozeBotID = defaults.string(forKey: cozeBotIDKey) ?? ""
 
         if let data = defaults.data(forKey: cloudProfilesKey),
            let decoded = try? JSONDecoder().decode([CloudModelProfile].self, from: data) {
@@ -102,6 +113,15 @@ final class ModelManager: ObservableObject {
         activeCloudProfile?.isComplete == true
     }
 
+    var hasValidCozeConfiguration: Bool {
+        !cozeAPIToken.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+            && !cozeBotID.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+    }
+
+    var parsingModeIsCoze: Bool {
+        currentModelType == .coze && hasValidCozeConfiguration
+    }
+
     var cloudProtocol: CloudAPIProtocol {
         activeCloudProfile?.apiProtocol ?? .openAICompatible
     }
@@ -133,6 +153,8 @@ final class ModelManager: ObservableObject {
             return "Vision OCR + 规则整理"
         case .customCloud:
             return hasValidCloudConfiguration ? "OCR + 云模型整理" : "云模型未配置，当前仍可用系统整理"
+        case .coze:
+            return hasValidCozeConfiguration ? "扣子智能体直接识图" : "扣子未配置，当前仍可用系统整理"
         }
     }
 

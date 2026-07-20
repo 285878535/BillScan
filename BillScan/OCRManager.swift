@@ -17,7 +17,38 @@ class OCRManager: NSObject {
     static let shared = OCRManager()
 
     func recognizeText(from image: UIImage, completion: @escaping (String, ReceiptType, [String: String]) -> Void) {
-        performOCRRecognition(image: image, completion: completion)
+        guard ModelManager.shared.parsingModeIsCoze else {
+            performOCRRecognition(image: image, completion: completion)
+            return
+        }
+
+        // 📝 调试打印：扣子直接识图
+        print("\n=====================================")
+        print("🤖 扣子智能体识图中，Bot ID：\(ModelManager.shared.cozeBotID)")
+        print("=====================================\n")
+
+        CozeService.shared.parseReceipt(image: image) { [weak self] result in
+            guard let self else { return }
+            switch result {
+            case .success(let structuredText):
+                // 📝 调试打印：扣子返回结果
+                print("\n=====================================")
+                print("📝 扣子返回结构化结果：")
+                print("-------------------------------------")
+                print(structuredText)
+                print("=====================================\n")
+
+                let (fullText, type, fields) = self.parseMultimodalResult(structuredText)
+                completion(fullText, type, fields)
+            case .failure(let error):
+                // 📝 调试打印：扣子失败，回退 OCR
+                print("\n=====================================")
+                print("⚠️ 扣子识别失败，回退系统 OCR：\(error.message)")
+                print("=====================================\n")
+
+                self.performOCRRecognition(image: image, completion: completion)
+            }
+        }
     }
 
     // 原有的OCR识别流程，提取为单独方法
@@ -668,6 +699,9 @@ class OCRManager: NSObject {
     private func parseMultimodalResult(_ result: String) -> (String, ReceiptType, [String: String]) {
         var fields: [String: String] = [:]
         var type: ReceiptType = .other
+        var medicalItems: [String] = []
+        var merchantValue: String?
+        var nameValue: String?
         let lines = result.components(separatedBy: .newlines)
             .map { $0.trimmingCharacters(in: .whitespacesAndNewlines) }
             .filter { !$0.isEmpty }
@@ -707,12 +741,9 @@ class OCRManager: NSObject {
                     fields["票据类型"] = "交通"
                 }
             case "医疗机构", "医院", "商家名称":
-                fields["商家名称"] = value
-                fields["医疗机构"] = value
-                fields["医院"] = value
+                merchantValue = value
             case "病人姓名", "姓名":
-                fields["病人姓名"] = value
-                fields["姓名"] = value
+                nameValue = value
             case "性别": fields["性别"] = value
             case "年龄": fields["年龄"] = value
             case "科室": fields["科室"] = value
@@ -721,8 +752,22 @@ class OCRManager: NSObject {
             case "时间", "日期", "就诊时间", "开票时间": fields["时间"] = value
             case "临床诊断", "诊断": fields["临床诊断"] = value
             case "总金额", "金额", "合计", "总价": fields["总金额"] = value
+            case "项目名", "检验项目": medicalItems.append(value) // 每个检验项目一行，聚合而不是互相覆盖
             default: fields[key] = value
             }
+        }
+
+        if !medicalItems.isEmpty {
+            fields["检验项目详情"] = medicalItems.joined(separator: "\n")
+            fields["项目数"] = "\(medicalItems.count)"
+        }
+
+        // 商家/姓名字段按票据类型只存一个键：医疗叫“医院”“病人姓名”，其他叫“商家名称”“姓名”
+        if let merchantValue {
+            fields[type == .medical ? "医院" : "商家名称"] = merchantValue
+        }
+        if let nameValue {
+            fields[type == .medical ? "病人姓名" : "姓名"] = nameValue
         }
 
         // 补充解析模式字段

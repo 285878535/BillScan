@@ -57,6 +57,44 @@ class Receipt: Identifiable {
     }
 }
 
+extension Receipt {
+    /// 列表和详情的展示标题：优先用能区分单据的具体信息，而不是笼统的类型名。
+    var displayTitle: String {
+        let fields = additionalFields ?? [:]
+        switch type {
+        case .medical:
+            let name = patientName?.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
+            let detail = (fields["临床诊断"] ?? fields["科室"] ?? "").trimmingCharacters(in: .whitespacesAndNewlines)
+            if !name.isEmpty, !detail.isEmpty {
+                return "\(name) · \(detail)"
+            }
+            if !detail.isEmpty {
+                return detail
+            }
+            if !name.isEmpty {
+                return name
+            }
+            return merchantName ?? type.rawValue
+        case .shopping, .food, .transport, .other:
+            if let merchant = merchantName?.trimmingCharacters(in: .whitespacesAndNewlines), !merchant.isEmpty {
+                return merchant
+            }
+            return type.rawValue
+        }
+    }
+
+    /// 列表的副标题：医疗显示医院，其他显示票据类型（标题已被商家名占用）；与标题重复时返回空。
+    var displaySubtitle: String {
+        let subtitle: String
+        if type == .medical, let hospital = merchantName?.trimmingCharacters(in: .whitespacesAndNewlines), !hospital.isEmpty {
+            subtitle = hospital
+        } else {
+            subtitle = type.rawValue
+        }
+        return subtitle == displayTitle ? "" : subtitle
+    }
+}
+
 enum ReceiptType: String, Codable, CaseIterable {
     case medical = "医疗检验单"
     case shopping = "购物小票"
