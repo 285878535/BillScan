@@ -3,54 +3,42 @@ import SwiftData
 
 @main
 struct BillScanApp: App {
-    @State private var showTabBar = true
+    @UIApplicationDelegateAdaptor(HealthNotificationDelegate.self) private var notificationDelegate
+    @State private var storage: Result<ModelContainer, Error> = Self.openStorage()
 
-    init() {
-        InjectionIIISetup.loadBundle()
-    }
+    init() { InjectionIIISetup.loadBundle() }
 
-    var sharedModelContainer: ModelContainer = {
-        let schema = Schema([
-            Receipt.self,
-            Category.self,
-        ])
-        let modelConfiguration = ModelConfiguration(schema: schema, isStoredInMemoryOnly: false)
-
+    private static func openStorage() -> Result<ModelContainer, Error> {
+        let schema = Schema([Receipt.self, Category.self, HealthEpisode.self, HealthDocument.self])
+        #if DEBUG
+        let isPreview = ProcessInfo.processInfo.arguments.contains("--health-demo")
+        #else
+        let isPreview = false
+        #endif
+        let configuration = ModelConfiguration(schema: schema, isStoredInMemoryOnly: isPreview)
         do {
-            return try ModelContainer(for: schema, configurations: [modelConfiguration])
-        } catch {
-            fatalError("Could not create ModelContainer: \(error)")
-        }
-    }()
+            let container = try ModelContainer(for: schema, configurations: [configuration])
+            #if DEBUG
+            if isPreview { try HealthPreviewData.populate(container.mainContext) }
+            #endif
+            return .success(container)
+        } catch { return .failure(error) }
+    }
 
     var body: some Scene {
         WindowGroup {
-            RootTabShell(showTabBar: $showTabBar)
+            switch storage {
+            case .success(let container):
+                HealthRootView().modelContainer(container)
+            case .failure(let error):
+                ContentUnavailableView {
+                    Label("资料库暂时无法打开", systemImage: "externaldrive.badge.exclamationmark")
+                } description: {
+                    Text("原有资料不会被清空。请检查设备剩余空间后重试。\n\(error.localizedDescription)")
+                } actions: {
+                    Button("重试") { storage = Self.openStorage() }.buttonStyle(.borderedProminent)
+                }.tint(HealthStyle.sage).preferredColorScheme(.light)
+            }
         }
-        .modelContainer(sharedModelContainer)
-    }
-}
-
-private struct RootTabShell: View {
-    @Binding var showTabBar: Bool
-    @ObserveInjection var inject
-
-    var body: some View {
-        TabView {
-            ReceiptFolderView(showTabBar: $showTabBar)
-                .tabItem {
-                    Image(systemName: "folder.fill")
-                    Text("票夹")
-                }
-
-            SettingsView(showTabBar: $showTabBar)
-                .tabItem {
-                    Image(systemName: "person.fill")
-                    Text("我的")
-                }
-        }
-        .background(AppTheme.bgPrimary.ignoresSafeArea())
-        .opacity(showTabBar ? 1 : 1)
-        .enableInjection()
     }
 }

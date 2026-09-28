@@ -11,14 +11,43 @@
 		A10A10A10A10A10A10A10A10 /* Llama in Frameworks */ = {isa = PBXBuildFile; productRef = A20A20A20A20A20A20A20A20 /* Llama */; };
 /* End PBXBuildFile section */
 
+/* Begin PBXContainerItemProxy section */
+		AB010000000000000000000A /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 98DC66592FA0FC2200D5DA4F /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 98DC66602FA0FC2200D5DA4F;
+			remoteInfo = BillScan;
+		};
+		AB020000000000000000000A /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 98DC66592FA0FC2200D5DA4F /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 98DC66602FA0FC2200D5DA4F;
+			remoteInfo = BillScan;
+		};
+/* End PBXContainerItemProxy section */
+
 /* Begin PBXFileReference section */
 		98DC66612FA0FC2200D5DA4F /* BillScan.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = BillScan.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		AB0100000000000000000003 /* BillScanTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; path = BillScanTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		AB0200000000000000000003 /* BillScanUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; path = BillScanUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
 		98DC66632FA0FC2200D5DA4F /* BillScan */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
 			path = BillScan;
+			sourceTree = "<group>";
+		};
+		AB0100000000000000000002 /* BillScanTests */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = BillScanTests;
+			sourceTree = "<group>";
+		};
+		AB0200000000000000000002 /* BillScanUITests */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = BillScanUITests;
 			sourceTree = "<group>";
 		};
 /* End PBXFileSystemSynchronizedRootGroup section */
@@ -33,6 +62,20 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		AB0100000000000000000005 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		AB0200000000000000000005 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
@@ -40,6 +83,8 @@
 			isa = PBXGroup;
 			children = (
 				98DC66632FA0FC2200D5DA4F /* BillScan */,
+				AB0200000000000000000002 /* BillScanUITests */,
+				AB0100000000000000000002 /* BillScanTests */,
 				98DC66622FA0FC2200D5DA4F /* Products */,
 			);
 			sourceTree = "<group>";
@@ -48,6 +93,8 @@
 			isa = PBXGroup;
 			children = (
 				98DC66612FA0FC2200D5DA4F /* BillScan.app */,
+				AB0200000000000000000003 /* BillScanUITests.xctest */,
+				AB0100000000000000000003 /* BillScanTests.xctest */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -78,6 +125,48 @@
 			productName = BillScan;
 			productReference = 98DC66612FA0FC2200D5DA4F /* BillScan.app */;
 			productType = "com.apple.product-type.application";
+		};
+		AB0100000000000000000001 /* BillScanTests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = AB0100000000000000000007 /* Build configuration list for PBXNativeTarget "BillScanTests" */;
+			buildPhases = (
+				AB0100000000000000000004 /* Sources */,
+				AB0100000000000000000005 /* Frameworks */,
+				AB0100000000000000000006 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				AB010000000000000000000B /* PBXTargetDependency */,
+			);
+			fileSystemSynchronizedGroups = (
+				AB0100000000000000000002 /* BillScanTests */,
+			);
+			name = BillScanTests;
+			productName = BillScanTests;
+			productReference = AB0100000000000000000003 /* BillScanTests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
+		AB0200000000000000000001 /* BillScanUITests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = AB0200000000000000000007 /* Build configuration list for PBXNativeTarget "BillScanUITests" */;
+			buildPhases = (
+				AB0200000000000000000004 /* Sources */,
+				AB0200000000000000000005 /* Frameworks */,
+				AB0200000000000000000006 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				AB020000000000000000000B /* PBXTargetDependency */,
+			);
+			fileSystemSynchronizedGroups = (
+				AB0200000000000000000002 /* BillScanUITests */,
+			);
+			name = BillScanUITests;
+			productName = BillScanUITests;
+			productReference = AB0200000000000000000003 /* BillScanUITests.xctest */;
+			productType = "com.apple.product-type.bundle.ui-testing";
 		};
 /* End PBXNativeTarget section */
 
@@ -113,12 +202,28 @@
 			projectRoot = "";
 			targets = (
 				98DC66602FA0FC2200D5DA4F /* BillScan */,
+				AB0200000000000000000001 /* BillScanUITests */,
+				AB0100000000000000000001 /* BillScanTests */,
 			);
 		};
 /* End PBXProject section */
 
 /* Begin PBXResourcesBuildPhase section */
 		98DC665F2FA0FC2200D5DA4F /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		AB0100000000000000000006 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		AB0200000000000000000006 /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -135,7 +240,34 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		AB0100000000000000000004 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		AB0200000000000000000004 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		AB010000000000000000000B /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 98DC66602FA0FC2200D5DA4F /* BillScan */;
+			targetProxy = AB010000000000000000000A /* PBXContainerItemProxy */;
+		};
+		AB020000000000000000000B /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 98DC66602FA0FC2200D5DA4F /* BillScan */;
+			targetProxy = AB020000000000000000000A /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
 
 /* Begin XCBuildConfiguration section */
 		98DC666A2FA0FC2400D5DA4F /* Debug */ = {
@@ -277,12 +409,12 @@
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				HEADER_SEARCH_PATHS = "$(BUILD_DIR)/../../SourcePackages/checkouts/llama.swift/Sources/llama/include/**";
-				INFOPLIST_KEY_CFBundleDisplayName = BillScan;
+				INFOPLIST_KEY_CFBundleDisplayName = "健康档案";
 				INFOPLIST_KEY_NSAppTransportSecurity_NSAllowsArbitraryLoads = YES;
 				INFOPLIST_KEY_NSAppTransportSecurity_NSAllowsLocalNetworking = YES;
-				INFOPLIST_KEY_NSCameraUsageDescription = "用于拍摄票据和扫描文稿，识别发票、小票和检验单内容。";
+				INFOPLIST_KEY_NSCameraUsageDescription = "用于拍摄与扫描病历、药方，保存原图并在本机识别文字。";
 				INFOPLIST_KEY_NSLocalNetworkUsageDescription = "允许连接你配置的本地或局域网模型服务。";
-				INFOPLIST_KEY_NSPhotoLibraryUsageDescription = "用于从相册选择票据图片并进行文字识别。";
+				INFOPLIST_KEY_NSPhotoLibraryUsageDescription = "用于选择病历、药方图片，归入健康档案并在本机识别文字。";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
@@ -323,12 +455,12 @@
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				HEADER_SEARCH_PATHS = "$(BUILD_DIR)/../../SourcePackages/checkouts/llama.swift/Sources/llama/include/**";
-				INFOPLIST_KEY_CFBundleDisplayName = BillScan;
+				INFOPLIST_KEY_CFBundleDisplayName = "健康档案";
 				INFOPLIST_KEY_NSAppTransportSecurity_NSAllowsArbitraryLoads = YES;
 				INFOPLIST_KEY_NSAppTransportSecurity_NSAllowsLocalNetworking = YES;
-				INFOPLIST_KEY_NSCameraUsageDescription = "用于拍摄票据和扫描文稿，识别发票、小票和检验单内容。";
+				INFOPLIST_KEY_NSCameraUsageDescription = "用于拍摄与扫描病历、药方，保存原图并在本机识别文字。";
 				INFOPLIST_KEY_NSLocalNetworkUsageDescription = "允许连接你配置的本地或局域网模型服务。";
-				INFOPLIST_KEY_NSPhotoLibraryUsageDescription = "用于从相册选择票据图片并进行文字识别。";
+				INFOPLIST_KEY_NSPhotoLibraryUsageDescription = "用于选择病历、药方图片，归入健康档案并在本机识别文字。";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
@@ -353,6 +485,64 @@
 			};
 			name = Release;
 		};
+		AB0100000000000000000008 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_STYLE = Automatic;
+				GENERATE_INFOPLIST_FILE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.3;
+				PRODUCT_BUNDLE_IDENTIFIER = com.xjx.BillScan.BillScanTests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/BillScan.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/BillScan";
+			};
+			name = Debug;
+		};
+		AB0100000000000000000009 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_STYLE = Automatic;
+				GENERATE_INFOPLIST_FILE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.3;
+				PRODUCT_BUNDLE_IDENTIFIER = com.xjx.BillScan.BillScanTests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/BillScan.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/BillScan";
+			};
+			name = Release;
+		};
+		AB0200000000000000000008 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				GENERATE_INFOPLIST_FILE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.3;
+				PRODUCT_BUNDLE_IDENTIFIER = com.xjx.BillScan.BillScanUITests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_TARGET_NAME = BillScan;
+			};
+			name = Debug;
+		};
+		AB0200000000000000000009 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				GENERATE_INFOPLIST_FILE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.3;
+				PRODUCT_BUNDLE_IDENTIFIER = com.xjx.BillScan.BillScanUITests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_TARGET_NAME = BillScan;
+			};
+			name = Release;
+		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
@@ -370,6 +560,24 @@
 			buildConfigurations = (
 				98DC666D2FA0FC2400D5DA4F /* Debug */,
 				98DC666E2FA0FC2400D5DA4F /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		AB0100000000000000000007 /* Build configuration list for PBXNativeTarget "BillScanTests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				AB0100000000000000000008 /* Debug */,
+				AB0100000000000000000009 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		AB0200000000000000000007 /* Build configuration list for PBXNativeTarget "BillScanUITests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				AB0200000000000000000008 /* Debug */,
+				AB0200000000000000000009 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
